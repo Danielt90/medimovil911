@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet Central - Modo Local</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuración de fuente y modo oscuro */
+        :root {
+            --primary-color: #ef4444; /* Rojo Emergencia */
+            --secondary-color: #1e3a8a; /* Azul Corporativo (Navy) */
+            --tertiary-color: #f59e0b; /* Amarillo Resalte */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo claro */
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        /* Estilo para tarjetas de alto contraste */
+        .card {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 2px, 4px, 0.06);
+        }
+
+        /* Estilos de Urgencia usando las variables */
+        .urgency-alta {
+            border-left: 5px solid var(--primary-color);
+        }
+        .urgency-media {
+            border-left: 5px solid var(--tertiary-color);
+        }
+        .urgency-baja {
+            border-left: 5px solid #10b981; /* Verde */
+        }
+
+        /* Estilo del ítem de menú activo */
+        .active-menu-item {
+            background-color: #1e3a8a; /* Azul más oscuro para el hover/activo */
+            border-bottom: 3px solid var(--tertiary-color); /* Amarillo para resaltar */
+        }
+        
+        /* Efecto de sombra para el header cuando el menú secundario se pega */
+        .shadow-md-sticky {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="p-0">
+
+    <!-- Encabezado Fijo (Barra Superior) - Fondo Azul Oscuro -->
+    <header class="bg-blue-900 shadow-lg p-3 sticky top-0 z-20">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white tracking-wider flex items-center">
+                <!-- Logo PNG. Incluí una URL de placeholder por si la imagen no carga localmente. -->
+                <img src="logo medimovil sin fondo.png" alt="Logo Corporativo" class="h-8 mr-2" onerror="this.onerror=null;this.src='https://placehold.co/120x32/1e3a8a/ffffff?text=LOGO+GMM';">
+                <span class="hidden sm:inline">Intranet Central</span>
+            </h1>
+            <div class="flex items-center space-x-3 text-sm text-white/90">
+                
+                <!-- Botón de Descarga -->
+                <button id="download-btn" onclick="downloadUpdatedHTML()" class="hidden admin-only bg-yellow-500 text-gray-800 font-bold px-3 py-1 rounded-full text-xs hover:bg-yellow-400 transition duration-150 shadow-md">
+                    Descargar HTML Actualizado
+                </button>
+
+                <span id="current-date-time" class="hidden sm:inline">Cargando fecha...</span>
+                
+                <!-- Estado de Autenticación -->
+                <div id="auth-status" class="flex items-center cursor-pointer" onclick="openLoginModal()">
+                    <span id="admin-status-badge" class="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-xs transition duration-150 hover:bg-red-600 shadow-md">
+                        ADMIN LOCAL (Acceder)
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Navegación Secundaria (Menú Principal) - Fondo Azul Intermedio -->
+    <nav class="bg-blue-800 shadow-md-sticky sticky top-[68px] z-10">
+        <div class="container mx-auto px-4 flex overflow-x-auto whitespace-nowrap text-sm">
+            <!-- Menú Ítems -->
+            <button id="menu-info-general" onclick="showMenuSection('info-general')" class="menu-item p-3 md:p-4 text-white hover:bg-blue-700 active-menu-item flex items-center transition-colors">
+                <span class="text-xl mr-2">ⓘ</span> Información General
+            </button>
+            <button onclick="showMenuSection('despacho')" class="menu-item p-3 md:p-4 text-white hover:bg-blue-700 flex items-center transition-colors">
+                <span class="text-xl mr-2">📄</span> Despacho
+            </button>
+            <button onclick="showMenuSection('protocolos')" class="menu-item p-3 md:p-4 text-white hover:bg-blue-700 flex items-center transition-colors">
+                <span class="text-xl mr-2">📋</span> Protocolos
+            </button>
+            <!-- SECCIÓN HORARIOS ELIMINADA -->
+            <button onclick="showMenuSection('telefono')" class="menu-item p-3 md:p-4 text-white hover:bg-blue-700 flex items-center transition-colors">
+                <span class="text-xl mr-2">☎️</span> Guía Telefónica
+            </button>
+            <!-- Otros Menús Estáticos (se mantienen ocultos por simplicidad) -->
+        </div>
+    </nav>
+
+    <!-- Contenido Principal (Main) -->
+    <main class="container mx-auto p-4 md:pt-8">
+
+        <!-- Contenedor Principal de Secciones -->
+        <div id="main-content-container">
+
+            <!-- SECCIÓN 1: INFORMACIÓN GENERAL (ANUNCIOS) - EDICIÓN LOCAL -->
+            <section id="info-general-content" class="menu-section">
+                <!-- Título y Botón de Añadir -->
+                <div class="flex justify-between items-center border-b border-blue-600 pb-2 mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-700">Información General (Anuncios)</h2>
+                    <!-- Botón visible solo para Administradores -->
+                    <button id="add-announcement-btn" onclick="openAdminModal('announcement', 'new')" class="hidden admin-only bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow-md hover:bg-red-700 transition duration-150 ease-in-out">
+                        + Añadir Anuncio
+                    </button>
+                </div>
+                
+                <!-- Lista de Anuncios DINÁMICOS (LocalStorage) -->
+                <div id="anuncios-list" class="space-y-4">
+                    <!-- Los anuncios se cargarán aquí por JavaScript/LocalStorage -->
+                </div>
+            </section>
+
+            <!-- SECCIÓN HORARIOS ELIMINADA (SE QUITA LA SECCIÓN 2) -->
+
+            <!-- SECCIONES ESTÁTICAS SIMPLES -->
+            <section id="despacho-content" class="menu-section hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Despacho</h2>
+                <p class="p-8 card rounded-lg text-gray-500 text-center">Módulo de Despacho en desarrollo. (Datos Estáticos).</p>
+            </section>
+            <section id="protocolos-content" class="menu-section hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Protocolos</h2>
+                <p class="p-8 card rounded-lg text-gray-500 text-center">Módulo de Protocolos y Documentación. (Datos Estáticos).</p>
+            </section>
+            <section id="telefono-content" class="menu-section hidden">
+                <h2 class="2xl font-semibold mb-4 text-gray-700">Guía Telefónica</h2>
+                <p class="p-8 card rounded-lg text-gray-500 text-center">Contactos internos y de emergencia de terceros. (Datos Estáticos).</p>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Modal de Login de Administrador -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0" id="login-modal-content">
+            <h3 class="text-xl font-bold mb-4 text-red-600">Acceso de Administrador</h3>
+            <p class="text-sm text-gray-600 mb-4">Introduzca la clave para habilitar la edición local y la descarga del archivo actualizado.</p>
+            
+            <form id="login-form" onsubmit="loginAdmin(event)">
+                <div class="mb-4">
+                    <label for="admin-key" class="block text-sm font-medium text-gray-700">Clave de Acceso:</label>
+                    <input type="password" id="admin-key" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                </div>
+                <div id="login-error" class="text-sm text-red-500 mb-4 hidden">Clave incorrecta. Inténtelo de nuevo.</div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeLoginModal()" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
+                    <button type="submit" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-150">Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal Único de Edición (SOLO ANUNCIOS AHORA) -->
+    <div id="admin-form-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-lg w-full transform transition-all duration-300 scale-95 opacity-0" id="admin-modal-content">
+            <h3 id="admin-modal-title" class="2xl font-bold mb-4 text-red-600">Crear Nuevo Elemento</h3>
+            
+            <form id="generic-form" onsubmit="handleGenericSubmit(event)">
+                <!-- Campo oculto para tipo de formulario (solo 'announcement' ahora) y ID de edición -->
+                <input type="hidden" id="form-type">
+                <input type="hidden" id="item-id">
+                
+                <!-- Campos Comunes para Anuncios -->
+                <div id="form-fields-announcement" class="space-y-4 hidden">
+                    <div class="mb-4">
+                        <label for="announcement-title" class="block text-sm font-medium text-gray-700">Título del Anuncio</label>
+                        <input type="text" id="announcement-title" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                    </div>
+                    <div class="mb-4">
+                        <label for="announcement-content" class="block text-sm font-medium text-gray-700">Contenido del Anuncio</label>
+                        <textarea id="announcement-content" rows="4" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border"></textarea>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="w-1/2">
+                            <label for="announcement-urgency" class="block text-sm font-medium text-gray-700">Urgencia</label>
+                            <select id="announcement-urgency" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border bg-white">
+                                <option value="Alta">Alta (Rojo)</option>
+                                <option value="Media">Media (Amarillo)</option>
+                                <option value="Baja">Baja (Verde)</option>
+                            </select>
+                        </div>
+                        <div class="w-1/2">
+                            <label for="announcement-author" class="block text-sm font-medium text-gray-700">Autor</label>
+                            <input type="text" id="announcement-author" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-2 border">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campos Específicos para Horarios (ELIMINADOS) -->
+
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAdminModal()" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
+                    <button type="submit" id="admin-modal-submit-btn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-150">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Importación Masiva de Horarios (ELIMINADO) -->
+    
+    <!-- Modal de Mensaje (para reemplazar alerts/confirms) -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div id="modal-content" class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0">
+            <h3 id="modal-title" class="text-xl font-bold mb-3 text-red-600"></h3>
+            <p id="modal-text" class="text-gray-700 mb-4 whitespace-pre-wrap"></p>
+            <div id="modal-buttons" class="flex justify-end space-x-3">
+                <button onclick="closeModal()" class="w-full bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition duration-200">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script JavaScript para funcionalidad Local -->
+    <script id="app-script">
+        // --- CONFIGURACIÓN Y VARIABLES GLOBALES ---
+        const ADMIN_PASSWORD = 'gmmadmin';
+        const ANNOUNCEMENTS_STORAGE_KEY = 'gmm911_local_announcements';
+        // CLAVE DE HORARIOS ELIMINADA: const SCHEDULE_STORAGE_KEY = 'gmm911_local_schedule_weekly_v2'; 
+        
+        let allAnnouncementsData = [];
+        // DATA DE HORARIOS ELIMINADA: let allScheduleData = [];
+        let isAdmin = false;
+
+        // Variables de calendario y roles ELIMINADAS (ya no se usan)
+        // const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const MONTHS_SPANISH = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        // Roles fijos para renderizado (ELIMINADOS)
+
+        // --- DATA INICIAL (ESTA SECCIÓN SERÁ REEMPLAZADA AL DESCARGAR) ---
+        // Data Inicial de Anuncios
+        const INITIAL_ANNOUNCEMENTS_JSON = JSON.stringify([
+            { id: Date.now() + 1, title: 'Nuevo Protocolo: Parada Cardíaca', content: 'Se implementa la nueva guía de RCP para adultos. El documento está en la sección \'Protocolos\'.', urgency: 'Alta', author: 'Coordinación Médica', createdAt: Date.now() - 86400000 },
+            { id: Date.now() + 2, title: 'Capacitación: Manejo de Vía Aérea', content: 'Obligatorio para personal de turno mañana y noche. Consultar su correo por horarios.', urgency: 'Media', author: 'RR.HH.', createdAt: Date.now() - 3600000 },
+            { id: Date.now() + 3, title: 'Cierre de Mes', content: 'Recordatorio: Se ha iniciado el proceso de cierre de mes. Favor enviar documentación pendiente antes del 25.', urgency: 'Baja', author: 'Administración', createdAt: Date.now() },
+        ]);
+
+        // Data Inicial de Horarios (ELIMINADA)
+        const INITIAL_SCHEDULE_JSON = JSON.stringify([]); 
+        // --- FIN DATA INICIAL ---
+
+        // ====================================================================
+        // --- MÓDULO: UI & UTILIDADES ---
+        // ====================================================================
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { day: '2-digit', month: 'long', year: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            
+            const dateStr = now.toLocaleDateString('es-ES', dateOptions);
+            const timeStr = now.toLocaleTimeString('es-ES', timeOptions).replace(/:\d{2}\s/, ' ');
+
+            document.getElementById('current-date-time').textContent = `${dateStr}, ${timeStr}`;
+        }
+
+        function showMenuSection(sectionName) {
+            document.querySelectorAll('.menu-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active-menu-item'));
+
+            const contentElement = document.getElementById(`${sectionName}-content`);
+            const menuItemElement = document.querySelector(`[onclick="showMenuSection('${sectionName}')"]`);
+
+            if (contentElement) contentElement.classList.remove('hidden');
+            if (menuItemElement) menuItemElement.classList.add('active-menu-item');
+            
+            // Lógica de horarios ELIMINADA: if (sectionName === 'horarios') { loadSchedule(); }
+        }
+        
+        function showModal(title, text, actions = null) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const textEl = document.getElementById('modal-text');
+            const buttonContainer = document.getElementById('modal-buttons');
+
+            titleEl.textContent = title;
+            textEl.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); 
+            buttonContainer.innerHTML = '';
+
+            if (actions && Array.isArray(actions) && actions.length > 0) {
+                actions.forEach(action => {
+                    const btn = document.createElement('button');
+                    btn.textContent = action.text;
+                    btn.className = `font-bold py-2 px-4 rounded-lg transition duration-200 ${actions.length === 1 ? 'w-full' : 'flex-1'} ${action.className} shadow-sm`;
+                    btn.onclick = action.action;
+                    buttonContainer.appendChild(btn);
+                });
+                buttonContainer.classList.remove('justify-end');
+                buttonContainer.classList.add('justify-center', 'space-x-3');
+            } else {
+                const defaultBtn = document.createElement('button');
+                defaultBtn.textContent = 'Cerrar';
+                defaultBtn.className = 'w-full bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition duration-200 shadow-sm';
+                defaultBtn.onclick = closeModal;
+                buttonContainer.appendChild(defaultBtn);
+                buttonContainer.classList.add('justify-end');
+                buttonContainer.classList.remove('justify-center', 'space-x-3');
+            }
+            
+            backdrop.classList.remove('hidden');
+            backdrop.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('opacity-0', 'scale-95');
+                content.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const backdrop = document.getElementById('modal-backdrop');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('opacity-100', 'scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+                backdrop.classList.remove('flex');
+            }, 300);
+        }
+
+
+        // ====================================================================
+        // --- MÓDULO: AUTENTICACIÓN Y MODO ADMIN ---
+        // ====================================================================
+
+        function updateAdminUI() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            const adminBadge = document.getElementById('admin-status-badge');
+            const authStatusDiv = document.getElementById('auth-status');
+
+            if (isAdmin) {
+                adminElements.forEach(el => el.classList.remove('hidden'));
+                document.getElementById('download-btn').classList.remove('hidden');
+                
+                adminBadge.textContent = 'ADMIN ACTIVO (Salir)';
+                adminBadge.classList.replace('bg-red-500', 'bg-green-600');
+                authStatusDiv.onclick = toggleAdminMode;
+            } else {
+                adminElements.forEach(el => el.classList.add('hidden'));
+                document.getElementById('download-btn').classList.add('hidden');
+
+                adminBadge.textContent = 'ADMIN LOCAL (Acceder)';
+                adminBadge.classList.replace('bg-green-600', 'bg-red-500');
+                authStatusDiv.onclick = openLoginModal;
+            }
+            renderAnnouncements(allAnnouncementsData); 
+            // renderScheduleTable(); (ELIMINADO)
+        }
+
+        function toggleAdminMode() {
+            if (isAdmin) {
+                showModal("Confirmar Cierre de Sesión", "¿Desea cerrar la sesión de administrador? La edición se desactivará.", [
+                    { text: 'Cancelar', action: closeModal, className: 'bg-gray-200 text-gray-700 hover:bg-gray-300' },
+                    { text: 'Salir', action: () => {
+                        isAdmin = false;
+                        updateAdminUI();
+                        closeModal();
+                    }, className: 'bg-red-600 text-white hover:bg-red-700' }
+                ]);
+            } else {
+                openLoginModal();
+            }
+        }
+
+        function openLoginModal() {
+            const modal = document.getElementById('login-modal');
+            const content = document.getElementById('login-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('admin-key').focus();
+            setTimeout(() => {
+                content.classList.remove('opacity-0', 'scale-95');
+                content.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+        
+        function closeLoginModal() {
+            const modal = document.getElementById('login-modal');
+            const content = document.getElementById('login-modal-content');
+            content.classList.remove('opacity-100', 'scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById('login-form').reset();
+            }, 300);
+        }
+
+        function loginAdmin(event) {
+            event.preventDefault();
+            const keyInput = document.getElementById('admin-key');
+            const errorDiv = document.getElementById('login-error');
+
+            if (keyInput.value === ADMIN_PASSWORD) {
+                isAdmin = true;
+                updateAdminUI();
+                closeLoginModal();
+                showModal("Acceso Exitoso", "Modo administrador activado. Ahora puede editar anuncios y descargar la versión actualizada del archivo HTML.");
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+
+        // ====================================================================
+        // --- MÓDULO: PERSISTENCIA Y DESCARGA LOCAL ---
+        // ====================================================================
+
+        function downloadUpdatedHTML() {
+            showModal("Confirmación de Descarga", 
+                "¿Desea descargar la versión actualizada de este archivo? **Deberá reemplazar el archivo HTML antiguo por el nuevo archivo descargado para ver los cambios permanentes al reiniciar el navegador.**",
+                [
+                    { text: 'Cancelar', action: closeModal, className: 'bg-gray-200 text-gray-700 hover:bg-gray-300' },
+                    { 
+                        text: 'Descargar y Salir', 
+                        action: () => {
+                            closeModal();
+                            triggerFileDownload();
+                        },
+                        className: 'bg-green-600 text-white hover:bg-green-700'
+                    }
+                ]
+            );
+        }
+
+        function triggerFileDownload() {
+            const clonedDoc = document.documentElement.cloneNode(true);
+            const scriptTag = clonedDoc.querySelector('script#app-script');
+            
+            if (scriptTag) {
+                const updatedAnnouncementsJson = JSON.stringify(allAnnouncementsData.map(ann => ({
+                    id: ann.id, title: ann.title, content: ann.content, urgency: ann.urgency, author: ann.author, createdAt: ann.createdAt
+                })));
+
+                // La data de horarios se reemplaza por un array vacío en la descarga
+                const updatedScheduleJson = JSON.stringify([]); 
+
+                let scriptContent = scriptTag.textContent;
+                
+                let regexAnnouncements = /(const INITIAL_ANNOUNCEMENTS_JSON = JSON.stringify\()([^;]+)(\);)/s;
+                scriptContent = scriptContent.replace(regexAnnouncements, 
+                    `const INITIAL_ANNOUNCEMENTS_JSON = JSON.stringify(${updatedAnnouncementsJson})$3`
+                );
+
+                let regexSchedule = /(const INITIAL_SCHEDULE_JSON = JSON.stringify\()([^;]+)(\);)/s;
+                scriptContent = scriptContent.replace(regexSchedule, 
+                    `const INITIAL_SCHEDULE_JSON = JSON.stringify(${updatedScheduleJson})$3`
+                );
+
+                scriptTag.textContent = scriptContent;
+            }
+            
+            const finalHtmlContent = '<!DOCTYPE html>\n' + clonedDoc.outerHTML;
+            const blob = new Blob([finalHtmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'intranet_GMM911_ACTUALIZADO.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            isAdmin = false;
+            updateAdminUI();
+            
+            showModal("Descarga Completada", "Se ha descargado el archivo 'intranet_GMM911_ACTUALIZADO.html'. Sustituya el archivo antiguo con este.");
+        }
+
+
+        // ====================================================================
+        // --- MÓDULO: ANUNCIOS CRUD & RENDERIZADO ---
+        // ====================================================================
+
+        function loadAnnouncements() {
+            const data = localStorage.getItem(ANNOUNCEMENTS_STORAGE_KEY);
+            if (data) {
+                allAnnouncementsData = JSON.parse(data).sort((a, b) => b.createdAt - a.createdAt);
+            } else {
+                try {
+                    allAnnouncementsData = JSON.parse(INITIAL_ANNOUNCEMENTS_JSON).sort((a, b) => b.createdAt - a.createdAt);
+                    saveAnnouncements();
+                } catch (e) {
+                    console.error("Error al cargar la data inicial de anuncios:", e);
+                    allAnnouncementsData = [];
+                }
+            }
+            renderAnnouncements(allAnnouncementsData);
+        }
+
+        function saveAnnouncements() {
+            localStorage.setItem(ANNOUNCEMENTS_STORAGE_KEY, JSON.stringify(allAnnouncementsData));
+        }
+
+        function deleteAnnouncement(announcementId) {
+            if (!isAdmin) {
+                 showModal("Acceso Denegado", "Debe iniciar sesión como administrador para eliminar anuncios.", [{ text: 'Acceder', action: () => { closeModal(); openLoginModal(); }, className: 'bg-red-600 text-white hover:bg-red-700' }]);
+                 return;
+            }
+
+            showModal("Confirmar Eliminación", 
+                "¿Está seguro de que desea eliminar este anuncio? Esta acción no se puede deshacer localmente.",
+                [
+                    { text: 'Cancelar', action: closeModal, className: 'bg-gray-200 text-gray-700 hover:bg-gray-300' },
+                    { 
+                        text: 'Eliminar', 
+                        action: () => {
+                            closeModal();
+                            allAnnouncementsData = allAnnouncementsData.filter(ann => ann.id != announcementId);
+                            saveAnnouncements();
+                            loadAnnouncements();
+                            showModal("Éxito", "Anuncio eliminado.");
+                        },
+                        className: 'bg-red-600 text-white hover:bg-red-700'
+                    }
+                ]
+            );
+        }
+
+        function renderAnnouncements(announcements) {
+            const list = document.getElementById('anuncios-list');
+            list.innerHTML = '';
+            
+            if (announcements.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 p-8 card rounded-lg">No hay anuncios publicados.</p>';
+                return;
+            }
+
+            announcements.forEach(ann => {
+                const urgencyClass = ann.urgency ? `urgency-${ann.urgency.toLowerCase()}` : 'urgency-baja';
+                const colorClass = ann.urgency === 'Alta' ? 'bg-red-600' : ann.urgency === 'Media' ? 'bg-yellow-600' : 'bg-green-600';
+                
+                const date = ann.createdAt ? new Date(ann.createdAt).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : 'Fecha desconocida';
+
+                const adminButtons = isAdmin ? `
+                    <div class="flex space-x-2 mt-3 pt-2 border-t border-gray-100">
+                        <button onclick="openAdminModal('announcement', 'edit', ${ann.id})" class="text-xs text-blue-600 hover:text-blue-800 font-medium transition duration-150">
+                            Editar
+                        </button>
+                        <span class="text-gray-300">|</span>
+                        <button onclick="deleteAnnouncement(${ann.id})" class="text-xs text-red-600 hover:text-red-800 font-medium transition duration-150">
+                            Eliminar
+                        </button>
+                    </div>
+                ` : '';
+
+                const html = `
+                    <div class="card p-4 rounded-lg ${urgencyClass} transition duration-300 hover:shadow-lg">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="text-lg font-bold text-gray-800">${ann.title}</h4>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full text-white ${colorClass}">
+                                ${ann.urgency}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-3 whitespace-pre-wrap">${ann.content}</p>
+                        <p class="text-xs text-gray-400">Publicado por <span class="font-medium text-gray-500">${ann.author || 'Sistema'}</span> el ${date}</p>
+                        ${adminButtons}
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+
+        // ====================================================================
+        // --- MÓDULO: HORARIOS CRUD & RENDERIZADO (ELIMINADO) ---
+        // ====================================================================
+        
+        /*
+        // Se eliminan todas las funciones relacionadas con horarios (loadSchedule, saveSchedule, etc.)
+        */
+        
+
+        // ====================================================================
+        // --- MÓDULO: MODAL ÚNICO DE EDICIÓN (ADAPTADO) ---
+        // ====================================================================
+
+        /**
+         * Abre el modal de edición/creación de asignaciones. (SOLO ANUNCIOS AHORA)
+         * @param {string} formType - 'announcement' (solo este valor es válido ahora).
+         * @param {string} mode - 'new' o 'edit'.
+         * @param {number|null} itemId - ID del item para edición.
+         */
+        function openAdminModal(formType, mode, itemId = null) {
+            if (!isAdmin) {
+                 showModal("Acceso Denegado", "Debe iniciar sesión como administrador para modificar el contenido.", [{ text: 'Acceder', action: () => { closeModal(); openLoginModal(); }, className: 'bg-red-600 text-white hover:bg-red-700' }]);
+                 return;
+            }
+
+            const modal = document.getElementById('admin-form-modal');
+            const modalTitle = document.getElementById('admin-modal-title');
+            const submitBtn = document.getElementById('admin-modal-submit-btn');
+            const formAnnouncements = document.getElementById('form-fields-announcement');
+            
+            document.getElementById('generic-form').reset();
+            document.getElementById('item-id').value = '';
+            document.getElementById('form-type').value = formType;
+            
+            // Ocultamos todos los campos (solo queda announcements visible si se solicita)
+            formAnnouncements.classList.add('hidden');
+            
+            if (formType === 'announcement') {
+                formAnnouncements.classList.remove('hidden');
+                
+                if (mode === 'new') {
+                    modalTitle.textContent = "Crear Nuevo Anuncio";
+                    submitBtn.textContent = "Publicar Anuncio";
+                    document.getElementById('announcement-author').value = 'Administrador'; // Default
+                } else if (mode === 'edit' && itemId) {
+                    const ann = allAnnouncementsData.find(a => a.id == itemId);
+                    if (ann) {
+                        modalTitle.textContent = "Editar Anuncio";
+                        submitBtn.textContent = "Guardar Cambios";
+                        document.getElementById('item-id').value = ann.id;
+                        document.getElementById('announcement-title').value = ann.title;
+                        document.getElementById('announcement-content').value = ann.content;
+                        document.getElementById('announcement-urgency').value = ann.urgency;
+                        document.getElementById('announcement-author').value = ann.author;
+                    } else {
+                        showModal("Error", "Anuncio no encontrado para edición.");
+                        return;
+                    }
+                }
+            } else {
+                 showModal("Error", "Tipo de formulario no válido. Solo se permiten anuncios.");
+                 return;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                document.getElementById('admin-modal-content').classList.remove('opacity-0', 'scale-95');
+                document.getElementById('admin-modal-content').classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+
+        function handleGenericSubmit(event) {
+            event.preventDefault();
+
+            if (!isAdmin) {
+                 showModal("Error", "Permisos insuficientes para guardar cambios.");
+                 return;
+            }
+
+            const formType = document.getElementById('form-type').value;
+            const id = document.getElementById('item-id').value;
+            let newData = {};
+            let isUpdate = !!id;
+
+            if (formType === 'announcement') {
+                newData = {
+                    title: document.getElementById('announcement-title').value,
+                    content: document.getElementById('announcement-content').value,
+                    urgency: document.getElementById('announcement-urgency').value,
+                    author: document.getElementById('announcement-author').value || 'Sistema',
+                };
+                
+                if (isUpdate) {
+                    const index = allAnnouncementsData.findIndex(a => a.id == id);
+                    if (index !== -1) { allAnnouncementsData[index] = { ...allAnnouncementsData[index], ...newData }; }
+                } else {
+                    newData.id = Date.now();
+                    newData.createdAt = Date.now();
+                    allAnnouncementsData.unshift(newData); // Añadir al inicio para que aparezca primero
+                }
+                saveAnnouncements();
+                loadAnnouncements(); // Recarga y renderiza
+                showModal("Éxito", `Anuncio **${isUpdate ? 'actualizado' : 'creado'}** correctamente.`);
+                
+            } else {
+                // Si intenta enviar algo que no es anuncio, simplemente se cierra.
+                 showModal("Error", "Operación no soportada. Solo se pueden gestionar anuncios.");
+                 return;
+            }
+
+            closeAdminModal();
+        }
+
+        function closeAdminModal() {
+            const modal = document.getElementById('admin-form-modal');
+            document.getElementById('admin-modal-content').classList.remove('opacity-100', 'scale-100');
+            document.getElementById('admin-modal-content').classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.getElementById('generic-form').reset();
+            }, 300);
+        }
+
+        // ====================================================================
+        // --- INICIALIZACIÓN ---
+        // ====================================================================
+        
+        /**
+         * Función de inicialización principal (IIFE - Immediately Invoked Function Expression)
+         */
+        (function init() {
+            // Establecer la fecha de hoy al inicio de la ejecución para referencias
+            // const today = new Date(); (ELIMINADO)
+            // window.today = today; (ELIMINADO)
+
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            loadAnnouncements();
+            // loadSchedule(); (ELIMINADO)
+            updateAdminUI();
+            
+            showMenuSection('info-general');
+            
+            // Se han eliminado las funciones y variables relacionadas con horarios
+        })();
+    </script>
+</body>
+</html>
